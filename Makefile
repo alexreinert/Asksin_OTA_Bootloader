@@ -33,45 +33,45 @@ all:
 # BOOTLOADER_PAGES         Number of pages in the bootloader section (remember 328p and 644a have different page size)
 # BOOTLOADER_UPDATE_START  Start address of protected .bootloaderUpdate section for OTA self update function
 #
-HM_LC_Sw1PBU_FM:    TARGET                    = HM_LC_Sw1PBU_FM
-HM_LC_Sw1PBU_FM:    MCU                       = atmega644
-HM_LC_Sw1PBU_FM:    CODE_END                  = 0xEFFF
-HM_LC_Sw1PBU_FM:    BOOTLOADER_PAGES          = 15
-HM_LC_Sw1PBU_FM:    BOOTLOADER_UPDATE_START   = 0xFF00
 
-HM_LC_Sw1PBU_FM:    BOOTLOADER_START          = 0xF000
-HM_LC_Sw1PBU_FM:    ADDRESS_DATA_TYPE_START   = 0xFFF0
-HM_LC_Sw1PBU_FM:    ADDRESS_DATA_SERIAL_START = 0xFFF2
-HM_LC_Sw1PBU_FM:    ADDRESS_DATA_ID_START     = 0xFFFC
-HM_LC_Sw1PBU_FM:    hex
+# Settings for ATmega328P, 4K Bootloader size
+ATmega328P:         TARGET                    = ATmega328P
+ATmega328P:         MCU                       = atmega328p
+ATmega328P:         CODE_END                  = 0x6FFF
+ATmega328P:         BOOTLOADER_PAGES          = 30
+ATmega328P:         BOOTLOADER_UPDATE_START   = 0x7F00
 
-# Settings for HM_LC_Sw1PBU_FM (Atmega644, 8k Bootloader size)
-HM_LC_Sw1PBU_FM_8k: TARGET                    = HM_LC_Sw1PBU_FM
-HM_LC_Sw1PBU_FM_8k: SUFFIX                    = _8k
-HM_LC_Sw1PBU_FM_8k: MCU                       = atmega644
-HM_LC_Sw1PBU_FM_8k: CODE_END                  = 0xDFFF
-HM_LC_Sw1PBU_FM_8k: BOOTLOADER_PAGES          = 31
-HM_LC_Sw1PBU_FM_8k: BOOTLOADER_UPDATE_START   = 0xFF00
+ATmega328P:         BOOTLOADER_START          = 0x7000
+ATmega328P:         ADDRESS_DATA_TYPE_START   = 0x7FF0
+ATmega328P:         ADDRESS_DATA_SERIAL_START = 0x7FF2
+ATmega328P:         ADDRESS_DATA_ID_START     = 0x7FFC
+ATmega328P:         hex
 
-HM_LC_Sw1PBU_FM_8k: BOOTLOADER_START          = 0xE000
-HM_LC_Sw1PBU_FM_8k: ADDRESS_DATA_START        = 0xFFF0
-HM_LC_Sw1PBU_FM_8k: ADDRESS_DATA_TYPE_START   = 0xFFF0
-HM_LC_Sw1PBU_FM_8k: ADDRESS_DATA_SERIAL_START = 0xFFF2
-HM_LC_Sw1PBU_FM_8k: ADDRESS_DATA_ID_START     = 0xFFFC
-HM_LC_Sw1PBU_FM_8k: hex
+# Settings for ATmega644P, 8K Bootloader size
+ATmega644P:         TARGET                    = ATmega644P
+ATmega644P:         MCU                       = atmega644p
+ATmega644P:         CODE_END                  = 0xDFFF
+ATmega644P:         BOOTLOADER_PAGES          = 31
+ATmega644P:         BOOTLOADER_UPDATE_START   = 0xFF00
 
-# Settings for HM_LC_Sw1PBU_FM (Atmega328p, 4k Bootloader size)
-HB_UW_Sen_THPL:     TARGET                    = HB_UW_Sen_THPL
-HB_UW_Sen_THPL:     MCU                       = atmega328p
-HB_UW_Sen_THPL:	    CODE_END                  = 0x6FFF
-HB_UW_Sen_THPL:     BOOTLOADER_PAGES          = 30
-HB_UW_Sen_THPL:     BOOTLOADER_UPDATE_START   = 0x7F00
+ATmega644P:         BOOTLOADER_START          = 0xE000
+ATmega644P:         ADDRESS_DATA_TYPE_START   = 0xFFF0
+ATmega644P:         ADDRESS_DATA_SERIAL_START = 0xFFF2
+ATmega644P:         ADDRESS_DATA_ID_START     = 0xFFFC
+ATmega644P:         hex
 
-HB_UW_Sen_THPL:     BOOTLOADER_START          = 0x7000
-HB_UW_Sen_THPL:     ADDRESS_DATA_TYPE_START   = 0x7FF0
-HB_UW_Sen_THPL:     ADDRESS_DATA_SERIAL_START = 0x7FF2
-HB_UW_Sen_THPL:     ADDRESS_DATA_ID_START     = 0x7FFC
-HB_UW_Sen_THPL:     hex
+# Settings for ATmega1284P, 8K Bootloader size
+ATmega1284P:        TARGET                    = ATmega1284P
+ATmega1284P:        MCU                       = atmega1284p
+ATmega1284P:        CODE_END                  = 0x1DFFF
+ATmega1284P:        BOOTLOADER_PAGES          = 31
+ATmega1284P:        BOOTLOADER_UPDATE_START   = 0x1FF00
+
+ATmega1284P:        BOOTLOADER_START          = 0x1E000
+ATmega1284P:        ADDRESS_DATA_TYPE_START   = 0x1FFF0
+ATmega1284P:        ADDRESS_DATA_SERIAL_START = 0x1FFF2
+ATmega1284P:        ADDRESS_DATA_ID_START     = 0x1FFFC
+ATmega1284P:        hex
 
 hex: uart_code
 	$(CC) -Wall -c -std=c99 -mmcu=$(MCU) $(LDFLAGS) -DF_CPU=$(F_CPU) -D$(TARGET) $(OPTIMIZE) cc.c -o cc.o

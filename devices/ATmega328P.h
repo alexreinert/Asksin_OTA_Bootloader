@@ -1,4 +1,4 @@
-// Pin assignment for Atmega328p (Univarsalsensor)
+// Pin assignment for Arduino Pro Mini
 
 // Pin assignment for the cc1101 module
 #define PORT_SPI             PORTB												// The Port B Data Register
@@ -40,16 +40,11 @@
  *****************************************/
 
 // The model type
-//#define HM_TYPE              0xF1, 0x01    // DIY (HB-UW-Sen-THPL-I)			// stored at 0x7FF0
-#define HM_TYPE              0xF1, 0x02    // DIY (HB-UW-Sen-THPL-O)			// stored at 0x7FF0
-//#define HM_TYPE              0x12, 0x34											// stored at 0x7FF0
+#define HM_TYPE              0x12, 0x34
 
 // 10 bytes serial number. Must be unique for each device
-//#define HM_SERIAL            'U','W','S','9','5','4','9','9','4','5'			// stored at 0x7FF2
-#define HM_SERIAL            'U','W','S','7','4','7','5','1','3','4'			// stored at 0x7FF2
-//#define HM_SERIAL            'H','B','0','D','e','f','a','u','l','t'			// stored at 0x7FF2
+#define HM_SERIAL            'D','M','Y','1','2','3','4','5','6','7'
 
 // 3 bytes The device address (hm_id)
-//#define HM_ID                0x17, 0x82, 0xDC									// stored at 0x7FFC
-#define HM_ID                0xEA, 0xD5, 0xC7									// stored at 0x7FFC
-//#define HM_ID                0xAB, 0xCD, 0xEF									// stored at 0x7FFC
+#define HM_ID                0x45, 0x67, 0x89
+
