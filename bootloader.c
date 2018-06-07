@@ -131,7 +131,7 @@ int main() {
 	#endif
 	cc1101Init(CC1101_MODE_100k);												// Initialize cc1101 again and switch to 100k mode
 
-	waitForCbMsg();																// wait again for CB message
+	// waitForCbMsg();																// wait again for CB message
 	flashFromRF();															// run the actual flashing
 }
 
@@ -508,10 +508,17 @@ void flashFromRF() {
 		}
 
 		if (data[3] != 0xCA) {
-			#if DEBUG > 0
-				uart_puts_P("Got other msgType\n");
-			#endif
-
+	    if (data[3] == 0xCB) {
+	      #if DEBUG > 0
+	        uart_puts_P("Got CB msg\n");
+	      #endif
+	      sendResponse(data, MSG_RESPONSE_TYPE_ACK);
+	    }
+	    else {
+			  #if DEBUG > 0
+				  uart_puts_P("Got other msgType\n");
+			  #endif
+	    }
 			continue;
 		}
 
