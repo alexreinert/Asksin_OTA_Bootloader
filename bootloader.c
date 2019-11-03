@@ -131,7 +131,7 @@ int main() {
 	#endif
 	cc1101Init(CC1101_MODE_100k);												// Initialize cc1101 again and switch to 100k mode
 
-	// waitForCbMsg();																// wait again for CB message
+	waitForCbMsg();																// wait again for CB message
 	flashFromRF();															// run the actual flashing
 }
 
@@ -413,8 +413,8 @@ void startApplication() {
  * Check for timeout.
  * If timeout reached, start the main application
  */
-void startApplicationOnTimeout() {
-	if (timeoutCounter > 30000) {												// wait about 10s at 8Mhz
+void startApplicationOnTimeout(uint8_t seconds) {
+	if (timeoutCounter > seconds * 3000) {												// wait about 10s at 8Mhz
 		#if DEBUG > 0
 			uart_puts_P("Timeout\n");
 		#endif
@@ -422,6 +422,18 @@ void startApplicationOnTimeout() {
 		resetOnCRCFail();
 
 		startApplication();
+	}
+}
+
+void reinitCC1101OnTimeout() {
+	if (timeoutReinitCounter > 9000) {												    // wait about 3s at 8Mhz
+		#if DEBUG > 0
+			uart_puts_P("CC1101 Timeout\n");
+		#endif
+    
+		timeoutReinitCounter = 0;
+
+		cc1101Init(CC1101_MODE_100k);
 	}
 }
 
@@ -460,8 +472,10 @@ void waitForCbMsg() {
 	#endif
 
 	timeoutCounter = 0;															// reset timeout
+	timeoutReinitCounter = 0;
+	
 	while(1) {
-		startApplicationOnTimeout();
+		startApplicationOnTimeout(10);
 
 		if ( !hmCheckAndDecodeData() ) {										// Wait for data and decode it
 			continue;
@@ -495,30 +509,34 @@ void flashFromRF() {
 	uint8_t  previousMsgId = data[1];											// last message id
 
 	timeoutCounter = 0;
-
+    timeoutReinitCounter = 0;
 	#if DEBUG > 0
 		uart_puts_P("Receive firmware\n");
 	#endif
 
 	while (1) {
-		startApplicationOnTimeout();
-
+		startApplicationOnTimeout(20);
+    
 		if ( !hmCheckAndDecodeData() ) {										// Wait for data and decode it
+			reinitCC1101OnTimeout();
 			continue;
 		}
+    
+		timeoutReinitCounter = 0;
 
 		if (data[3] != 0xCA) {
-	    if (data[3] == 0xCB) {
-	      #if DEBUG > 0
-	        uart_puts_P("Got CB msg\n");
-	      #endif
-	      sendResponse(data, MSG_RESPONSE_TYPE_ACK);
-	    }
-	    else {
-			  #if DEBUG > 0
+			if (data[3] == 0xCB) {
+				#if DEBUG > 0
+					uart_puts_P("Got CB msg\n");
+				#endif
+				sendResponse(data, MSG_RESPONSE_TYPE_ACK);
+			}
+			else {
+				#if DEBUG > 0
 				  uart_puts_P("Got other msgType\n");
-			  #endif
-	    }
+				#endif
+			}
+
 			continue;
 		}
 
@@ -527,7 +545,7 @@ void flashFromRF() {
 			if (pageCount > 0) {
 				// The other side may have missed our ACK. It will re send the last block
 				pageCount--;
-
+        
 				#if DEBUG > 0
 					uart_puts_P("Retransmit, reflash!\n");
 				#endif
@@ -648,6 +666,7 @@ ISR(INT0_vect) {
 ISR(TIMER0_OVF_vect) {
 	TCNT0 = 0;
 	timeoutCounter++;
+	timeoutReinitCounter++;
 }
 
 

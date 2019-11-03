@@ -16,7 +16,7 @@ uint8_t data[60];																// copy of received data
 uint8_t hasData = 0;															// flag indicate if we received data for our address
 
 uint16_t timeoutCounter = 0;
-
+uint16_t timeoutReinitCounter = 0;
 #define MSG_RESPONSE_TYPE_ACK         0x00
 #define MSG_RESPONSE_TYPE_NACK        0x80
 
@@ -34,7 +34,8 @@ uint8_t hmCheckAndDecodeData();
 void hmEncodeAndSendData(uint8_t *msg);
 void sendResponse(uint8_t *msg, uint8_t type);
 void startApplication();
-void startApplicationOnTimeout();
+void startApplicationOnTimeout(uint8_t seconds);
+void reinitCC1101OnTimeout();
 void sendBootloaderSequence();
 void waitForCbMsg();
 void switch_radio_to_100k_mode();

@@ -28,16 +28,18 @@ const PROGMEM const uint8_t initVal[] = {
 	CC1101_MDMCFG3,  0x93,
 	CC1101_MDMCFG2,  0x03,
 	CC1101_DEVIATN,  0x34,
-	CC1101_MCSM2,    0x01,
-	CC1101_MCSM1,    0x30,
+	//CC1101_MCSM2,    0x01,
+	//CC1101_MCSM1,    0x30,
+	CC1101_MCSM1,    0x03,
 	CC1101_MCSM0,    0x18,
 	CC1101_FOCCFG,   0x16,
 	CC1101_AGCCTRL2, 0x43,
 	CC1101_FREND1,   0x56,
-	CC1101_FSCAL1,   0x00,
+	//CC1101_FSCAL1,   0x00,
+	CC1101_FSCAL1,   0x1F,
 	CC1101_FSCAL0,   0x11,
-	CC1101_TEST1,    0x35,
-	CC1101_PATABLE,  0xC3,
+	//CC1101_TEST1,    0x35,
+	CC1101_PATABLE,  0x03,
 };
 
 // initialize settings for cc1101 with 100k mode
@@ -54,7 +56,7 @@ const uint8_t PROGMEM initValUpdate[] = {
 	CC1101_FREND1,   0xB6,
 	CC1101_FSCAL3,   0xEA,
 };
-
+  
 /*
  * initialize CC1101
  */
@@ -100,17 +102,17 @@ void cc1101Init(uint8_t mode100k) {
 	}
 
 	cmdStrobe(CC1101_SCAL);														// calibrate frequency synthesizer and turn it off
-	_delay_ms(4);
+	_delay_ms(23);
 
-	do {
-		cmdStrobe(CC1101_SRX);
-	} while (readReg(CC1101_MARCSTATE, CC1101_STATUS) != 0x0D);
+	//do {
+	//	cmdStrobe(CC1101_SRX);
+	//} while (readReg(CC1101_MARCSTATE, CC1101_STATUS) != 0x0D);
 	
-	writeReg(CC1101_PATABLE, PA_MaxPower);										// configure PATABLE
-	cmdStrobe(CC1101_SRX);														// flush the RX buffer
-	cmdStrobe(CC1101_SWORRST);													// reset real time clock
+	//writeReg(CC1101_PATABLE, PA_MaxPower);										// configure PATABLE
+	//cmdStrobe(CC1101_SRX);														// flush the RX buffer
+	//cmdStrobe(CC1101_SWORRST);													// reset real time clock
 
-	_delay_ms(3);
+	//_delay_ms(3);
 
 	sei();
 }
@@ -126,17 +128,45 @@ void sendData(uint8_t *buf, uint8_t burst) {									// send data packet via RF
 	 * my_delay_us(10);
 	 */
  	cmdStrobe(CC1101_SIDLE);													// go to idle mode
-	cmdStrobe(CC1101_SFRX );													// flush RX buffer
+	//cmdStrobe(CC1101_SFRX );													// flush RX buffer
 	cmdStrobe(CC1101_SFTX );													// flush TX buffer
 	
-	_delay_ms(1);																// wait a short time to set TX mode
+	uint8_t i=200;
+	do {
+		cmdStrobe(CC1101_STX);
+		_delay_us(100);
+		if( --i == 0 ) {
+		  // can not enter TX state - reset fifo
+		  cmdStrobe(CC1101_SIDLE );
+		  cmdStrobe(CC1101_SFTX  );
+		  cmdStrobe(CC1101_SNOP );
+		  // back to RX mode
+		  do { 
+			cmdStrobe(CC1101_SRX);
+		  } while (readReg(CC1101_MARCSTATE, CC1101_STATUS) != CC1101_MARCSTATE_RX);
+		  return;
+		}
+	}
+	while(readReg(CC1101_MARCSTATE, CC1101_STATUS) != CC1101_MARCSTATE_TX);
+
+	//_delay_ms(1);																// wait a short time to set TX mode
+	_delay_ms(10);
+	if (burst) {         // BURST-bit set?
+		_delay_ms(350);    // according to ELV, devices get activated every 300ms, so send burst for 360ms
+	}
 
 	writeBurst(CC1101_TXFIFO, buf, buf[0]+1);									// write in TX FIFO
 
 	cmdStrobe(CC1101_SFRX);														// flush the RX buffer
 	cmdStrobe(CC1101_STX);														// send a burst
 
-	for(uint8_t i=0; i< 200;++i) {												// after sending out all bytes the chip should go automatically in RX mode
+	for(uint8_t i = 0; i < 200; i++) {  // after sending out all bytes the chip should go automatically in RX mode
+		if( readReg(CC1101_MARCSTATE, CC1101_STATUS) == CC1101_MARCSTATE_RX)
+		  break;                                    //now in RX mode, good
+		_delay_us(100);
+	}
+
+	/*for(uint8_t i=0; i< 200;++i) {												// after sending out all bytes the chip should go automatically in RX mode
 		if( readReg(CC1101_MARCSTATE, CC1101_STATUS) == CC1101_MARCSTATE_RX)
 			break;																//now in RX mode, good
 		if( readReg(CC1101_MARCSTATE, CC1101_STATUS) != CC1101_MARCSTATE_TX) {
@@ -144,7 +174,7 @@ void sendData(uint8_t *buf, uint8_t burst) {									// send data packet via RF
 		}
 
 		_delay_us(10);
-	}
+	}*/
 }
 
 uint8_t receiveData(uint8_t *buf) {												// read data packet from RX FIFO
@@ -166,9 +196,13 @@ uint8_t receiveData(uint8_t *buf) {												// read data packet from RX FIFO
 	} else buf[0] = 0;															// nothing to do, or overflow
 
 	cmdStrobe(CC1101_SFRX);														// flush Rx FIFO
+    _delay_us(190);
 	cmdStrobe(CC1101_SIDLE);													// enter IDLE state
+    cmdStrobe(CC1101_SNOP);
+    cmdStrobe(CC1101_SFRX);
+    
 	cmdStrobe(CC1101_SRX);														// back to RX state
-	cmdStrobe(CC1101_SWORRST);													// reset real time clock
+	//cmdStrobe(CC1101_SWORRST);													// reset real time clock
 	
 	return buf[0];																// return the data buffer
 }
